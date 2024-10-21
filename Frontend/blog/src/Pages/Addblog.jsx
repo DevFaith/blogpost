@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { db, storage } from '../Firebase/Config'; // Import Firestore and Storage
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// import { db, storage } from '../Firebase/Config'; // Import Firestore and Storage
+// import { collection, addDoc } from "firebase/firestore";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import axios from 'axios';
 
 function AddBlog() {
   const [name, setName] = useState('');
@@ -13,41 +14,61 @@ function AddBlog() {
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
   };
-
-  const handleSubmit = async (e) => {
+  const  handleSubmit =  async (e) => {
     e.preventDefault();
-    if (!name || !description || !image) {
-      setError('All fields are required');
-      return;
-    }
-
-    setLoading(true);
-
+    const formData = new FormData();  
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('image', image);
     try {
-      // Upload image to Firebase Storage
-      const imageRef = ref(storage, `blogImages/${image.name}`);
-      await uploadBytes(imageRef, image);
-      const imageUrl = await getDownloadURL(imageRef);
-
-      // Save blog details to Firestore
-      await addDoc(collection(db, 'blogs'), {
-        name,
-        description,
-        imageUrl,
-        createdAt: new Date(),
-      });
-
-      setLoading(false);
-      setName('');
-      setDescription('');
-      setImage(null);
-      setError('');
-      alert('Blog added successfully');
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
-    }
+     await axios.post('http://localhost:4000/addblog', formData);
+     
+     setLoading(false);
+         setName('');
+         setDescription('');
+         setImage(null);
+         setError('');
+         alert('Blog added successfully');
+       } catch (err) {
+         setError(err.message);
+         setLoading(false);
+       }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!name || !description || !image) {
+  //     setError('All fields are required');
+  //     return;
+  //   }
+
+  //   setLoading(true);
+
+  //   try {
+  //     // Upload image to Firebase Storage
+  //     const imageRef = ref(storage, `blogImages/${image.name}`);
+  //     await uploadBytes(imageRef, image);
+  //     const imageUrl = await getDownloadURL(imageRef);
+
+  //     // Save blog details to Firestore
+  //     await addDoc(collection(db, 'blogs'), {
+  //       name,
+  //       description,
+  //       imageUrl,
+  //       createdAt: new Date(),
+  //     });
+
+  //     setLoading(false);
+  //     setName('');
+  //     setDescription('');
+  //     setImage(null);
+  //     setError('');
+  //     alert('Blog added successfully');
+  //   } catch (err) {
+  //     setError(err.message);
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
